@@ -133,7 +133,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>Calculadora de Apalancamiento y Liquidación</h1>
+      <h1>Calculadora de Trading</h1>
       <ParametrosIniciales
         fondosMargen={fondosMargen}
         setFondosMargen={setFondosMargen}
