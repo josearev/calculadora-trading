@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { v4 as uuidv4 } from "uuid";
 import "./App.css";
 import ParametrosIniciales from "./ParametrosIniciales";
 import PosicionesAdicionales from "./PosicionesAdicionales";
@@ -15,24 +16,30 @@ function App() {
   const [gananciaPerdida, setGananciaPerdida] = useState(null);
   const nodeRefs = useRef([]);
 
+  useEffect(() => {
+    nodeRefs.current = nodeRefs.current.slice(0, posiciones.length);
+  }, [posiciones]);
+
   const formatNumber = (value) => {
     return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const agregarPosicion = () => {
-    setPosiciones([...posiciones, { cantidadBTC: "", precioEntrada: "" }]);
+    const newPosicion = { id: uuidv4(), cantidadBTC: "", precioEntrada: "" };
+    setPosiciones([...posiciones, newPosicion]);
     nodeRefs.current.push(React.createRef());
   };
 
-  const eliminarPosicion = (index) => {
-    const nuevasPosiciones = posiciones.filter((_, i) => i !== index);
+  const eliminarPosicion = (id) => {
+    const nuevasPosiciones = posiciones.filter((pos) => pos.id !== id);
     setPosiciones(nuevasPosiciones);
-    nodeRefs.current.splice(index, 1);
+    nodeRefs.current = nodeRefs.current.filter((_, i) => posiciones[i].id !== id);
   };
 
-  const actualizarPosicion = (index, key, value) => {
-    const nuevasPosiciones = [...posiciones];
-    nuevasPosiciones[index][key] = value.replace(/,/g, '.');
+  const actualizarPosicion = (id, key, value) => {
+    const nuevasPosiciones = posiciones.map((pos) =>
+      pos.id === id ? { ...pos, [key]: value.replace(/,/g, '.') } : pos
+    );
     setPosiciones(nuevasPosiciones);
   };
 
@@ -142,13 +149,13 @@ function App() {
         precioEntradaInicial={precioEntradaInicial}
         setPrecioEntradaInicial={setPrecioEntradaInicial}
       />
-      <button id="agregarPosicion" onClick={agregarPosicion}>Agregar Posición</button>
       <PosicionesAdicionales
         posiciones={posiciones}
         actualizarPosicion={actualizarPosicion}
         eliminarPosicion={eliminarPosicion}
         nodeRefs={nodeRefs}
       />
+      <button onClick={agregarPosicion}>Agregar Posición</button>
       <Resultados
         calcularPosicionPonderada={calcularPosicionPonderada}
         prestamo={prestamo}
